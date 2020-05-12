@@ -7,6 +7,7 @@ import axios from 'axios';
 import {configSchema} from "./schemas/ConfigResponse";
 import Header from "./Components/Margins/Header";
 import Footer from "./Components/Margins/Footer";
+import Itinerary from "./Components/Itinerary/Itinerary";
 
 export default class App extends Component{
     constructor(props) {
@@ -26,6 +27,7 @@ export default class App extends Component{
                 <div className="content-wrap">
                     <Header/>
                     {this.state.errorMessage}
+                    <div className="App"><Itinerary /></div>
                 </div>
                 <Footer config = {this.state.config}/>
             </div>

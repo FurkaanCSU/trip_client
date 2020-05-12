@@ -58,9 +58,9 @@ export default class Footer extends Component{
                 <div className="vertical-center tco-text">
                     <Container>
                         <div className="centered">
-                            <a className="tco-text" onClick={() => this.setState({modalOpen: !this.state.modalOpen})}>
+                            <p className="tco-text" onClick={() => this.setState({modalOpen: !this.state.modalOpen})}>
                                 <b>Config</b>
-                            </a>
+                            </p>
                             <p className="tco-text">Copyright 2020 Anwar Technologies Limited. All rights reserved.</p>
                         </div>
                     </Container>
