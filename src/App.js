@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import './App.css';
 import {SERVER_CONFIG_REQUEST, HTTP_BAD_REQUEST} from "./Constants";
 import {isJsonResponseValid} from "./utils/restfulAPI";
-import {createErrorBanner} from "./CheckErrorStatus";
+import {checkErrorResponse, createErrorBanner} from "./CheckErrorStatus";
 import axios from 'axios';
 import {configSchema} from "./schemas/ConfigResponse";
 import Header from "./Components/Margins/Header";
@@ -35,6 +35,8 @@ export default class App extends Component{
     getConfig(){
         axios.get(SERVER_CONFIG_REQUEST).then(response => {
             this.processConfigResponse(response)
+        }).catch((error)=>{//DEAL WITH NITTY GRITTY OF THIS LATER, THIS SHOULD BE FINE FOR NOW
+                this.processServerConfigError("INVALID_RESPONSE", HTTP_BAD_REQUEST, `Something wrong happened, most probably internal server issues`)
         });
     }
 
