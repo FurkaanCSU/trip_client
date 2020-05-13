@@ -13,12 +13,14 @@ export default class Itinerary extends Component{
         return (
             <div>
                 <Nav tabs className="centerElement">
-                    {this.makeNavItem('1', "Trip")}
-                    {this.makeNavItem('2', "Distance")}
+                    {this.makeNavItem('1', "Distance")}
+                    {this.makeNavItem('2', "Log")}
+                    {this.makeNavItem('3', "Account Details")}
                 </Nav>
                 <TabContent activeTab={this.state.activeTab}>
-                    <TabPane tabId="1">{}</TabPane>
-                    <TabPane tabId="2">{<Distance />}</TabPane>
+                    <TabPane tabId="1">{<Distance />}</TabPane>
+                    <TabPane tabId="2">{}</TabPane>
+                    <TabPane tabId="3">{}</TabPane>
                 </TabContent>
             </div>
         );
