@@ -7,6 +7,7 @@ import axios from 'axios';
 import {configSchema} from "./schemas/ConfigResponse";
 import Header from "./Components/Margins/Header";
 import Footer from "./Components/Margins/Footer";
+import Itinerary from "./Components/Itinerary/Itinerary";
 
 export default class App extends Component{
     constructor(props) {
@@ -26,6 +27,7 @@ export default class App extends Component{
                 <div className="content-wrap">
                     <Header/>
                     {this.state.errorMessage}
+                    <div className="App"><Itinerary /></div>
                 </div>
                 <Footer config = {this.state.config}/>
             </div>
@@ -35,16 +37,18 @@ export default class App extends Component{
     getConfig(){
         axios.get(SERVER_CONFIG_REQUEST).then(response => {
             this.processConfigResponse(response)
-        }).catch((error)=>{//DEAL WITH NITTY GRITTY OF THIS LATER, THIS SHOULD BE FINE FOR NOW
-                this.processServerConfigError("INVALID_RESPONSE", HTTP_BAD_REQUEST, `Something wrong happened, most probably internal server issues`)
+        }).catch((error)=>{
+                this.processConfigResponse(error)
         });
     }
 
     processConfigResponse(configResponse){
         if(!isJsonResponseValid(configResponse.data, configSchema)) {
             this.processServerConfigError("INVALID_RESPONSE", HTTP_BAD_REQUEST, `Configuration response not valid`);
-        }else{
+        }else if(!checkErrorResponse(configResponse)){
             this.setState({config: configResponse})
+        } else{
+            this.processServerConfigError(configResponse.statusText, configResponse.status, "Failed to Fetch from server")
         }
     }
 
