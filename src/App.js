@@ -38,7 +38,7 @@ export default class App extends Component{
         axios.get(SERVER_CONFIG_REQUEST).then(response => {
             this.processConfigResponse(response)
         }).catch((error)=>{
-                this.processConfigResponse(error)
+            this.processConfigResponse(error)
         });
     }
 
