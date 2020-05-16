@@ -1,7 +1,6 @@
-export const CLIENT_NAME = "Furkaan's Personal Spring Boot and React Project"
+export const CLIENT_NAME = "Spring Boot and React Toolkit"
 
-export const SERVER_CONFIG_REQUEST = "http://localhost:8080/api/config";
-export const SERVER_DISTANCE_REQUEST = "http://localhost:8080/api/distance";
+export const SERVER_REQUEST = "http://localhost:8080";
 
 export const HTTP_OK = 200;
 export const HTTP_BAD_REQUEST = 400;

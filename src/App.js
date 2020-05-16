@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
 import './App.css';
-import {SERVER_CONFIG_REQUEST, HTTP_BAD_REQUEST} from "./Constants";
-import {isJsonResponseValid} from "./utils/restfulAPI";
+import {SERVER_REQUEST, HTTP_BAD_REQUEST} from "./Constants";
+import {isJsonResponseValid, sendServerRequest} from "./utils/restfulAPI";
 import {checkErrorResponse, createErrorBanner} from "./CheckErrorStatus";
-import axios from 'axios';
 import {configSchema} from "./schemas/ConfigResponse";
 import Header from "./Components/Margins/Header";
 import Footer from "./Components/Margins/Footer";
@@ -16,9 +15,9 @@ export default class App extends Component{
             config : null,
             errorMessage : null
         }
-        if(this.state.config === null){
-            this.getConfig();
-        }
+        sendServerRequest(SERVER_REQUEST, "config").then(config =>{
+            this.processConfigResponse(config);
+        })
     }
 
     render() {
@@ -34,21 +33,13 @@ export default class App extends Component{
         );
     }
 
-    getConfig(){
-        axios.get(SERVER_CONFIG_REQUEST).then(response => {
-            this.processConfigResponse(response)
-        }).catch((error)=>{
-            this.processConfigResponse(error)
-        });
-    }
-
     processConfigResponse(configResponse){
-        if(!isJsonResponseValid(configResponse.data, configSchema)) {
+        if(!isJsonResponseValid(configResponse.body, configSchema)) {
             this.processServerConfigError("INVALID_RESPONSE", HTTP_BAD_REQUEST, `Configuration response not valid`);
-        }else if(!checkErrorResponse(configResponse)){
-            this.setState({config: configResponse})
+        }else if(!checkErrorResponse(configResponse.statusCode)){
+            this.setState({config: configResponse.body, errorMessage: null})
         } else{
-            this.processServerConfigError(configResponse.statusText, configResponse.status, "Failed to Fetch from server")
+            this.processServerConfigError(configResponse.statusText, configResponse.statusCode, configResponse.message)
         }
     }
 
