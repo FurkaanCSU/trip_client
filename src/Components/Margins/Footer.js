@@ -23,19 +23,19 @@ export default class Footer extends Component{
                         <Col>
                             ServerName
                         </Col>
-                        <Col>{this.props.config.data.serverName}</Col>
+                        <Col>{this.props.config.serverName}</Col>
                     </Row>
                     <Row>
                         <Col>RequestType</Col>
-                        <Col>{this.props.config.data.requestType}</Col>
+                        <Col>{this.props.config.requestType}</Col>
                     </Row>
                     <Row>
                         <Col>RequestVersion</Col>
-                        <Col>{this.props.config.data.requestVersion}</Col>
+                        <Col>{this.props.config.requestVersion}</Col>
                     </Row>
                     <Row>
                         <Col>SupportedRequests</Col>
-                        <Col>{this.props.config.data.supportedRequests}</Col>
+                        <Col>{this.props.config.supportedRequests}</Col>
                     </Row>
                 </Container>
             );

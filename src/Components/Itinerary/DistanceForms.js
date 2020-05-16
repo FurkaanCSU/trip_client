@@ -1,140 +1,134 @@
-import React, {Component} from "react";
-import {Button, Col, Container, Form, FormGroup, Input, Label, Row, ButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem} from "reactstrap";
-import {PROTOCOL_VERSION} from "../../Constants";
+import React, {Component} from "react"
+import {Formik, withFormik} from "formik"
+import {Button, FormGroup, Row, Col, Form, Input, Label} from 'reactstrap'
+import {PROTOCOL_VERSION, SERVER_REQUEST} from "../../Constants"
+import {sendServerPostRequest} from "../../utils/restfulAPI"
 
-export default class DistanceForms extends Component{
-    constructor(props) {
-        super(props);
-        this.state = {
-            place1_lat : "",
-            place1_lon : "",
-            place2_lat : "",
-            place2_lon : "",
-            earthRadius : ""
-        }
-    }
 
+export default class DistanceForms extends Component {
     render() {
+
         return(
             <div>
-                {this.renderForms()}
-            </div>
-        );
+                <h3>Distance Calculator</h3>
+                <Formik
+                    initialValues={{place1: '', place2: '', earthRadius: 6371}}
+                    validate={values => {
+                        const errors = {};
+                        if (!values.place1) {
+                            errors.place1 = 'Required';
+                        } else if (
+                            !/^[+-]*\d+\.?\d*\s*,\s*[+-]*\d{0,3}[\.?\d*]*$/.test(values.place1)
+                        ) {
+                            errors.place1 = 'Invalid location';
+                        }
+                        if (!values.place2) {
+                            errors.place2 = 'Required';
+                        } else if (
+                            !/^[+-]*\d+\.?\d*\s*,\s*[+-]*\d{0,3}[\.?\d*]*$/.test(values.place2)
+                        ) {
+                        errors.place2 = 'Invalid location';
+                        }
+                        return errors;
+                    }
+                    } onSubmit={(values, {setSubmitting}) => {
+                        let place1 = values.place1.split(',')
+                        let place2 = values.place2.split(',')
+                        setSubmitting(false)
+                        this.sendDistanceRequest({
+                            place1: {
+                                latitude: place1[0],
+                                longitude: place1[1]
+                            },
+                            place2: {
+                                latitude: place2[0],
+                                longitude: place2[1]
+                            },
+                            earthRadius: values.earthRadius
+                        })
+                    }}
+                >
+                {({
+                    values,
+                    errors,
+                    touched,
+                    handleChange,
+                    handleBlur,
+                      handleSubmit,
+                    isSubmitting,
+                    submitForm,
+                    setFieldValue
+                    /* and other goodies */
+                }) => (
+                    <form onSubmit={handleSubmit} className="centerForm">
+                        <div>
+                            <Input
+                                type="place1"
+                                name="place1"
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                value={values.place1}
+                            />
+                            <div style={{color: "red", fontSize: 12}}>{errors.place1 && touched.place1 && errors.place1}</div>
+                        </div>
+                        <div>
+                            <Input
+                                type="place2"
+                                name="place2"
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                value={values.place2}
+                            />
+                            <div style={{color: "red", fontSize: 12}}>{errors.place2 && touched.place2 && errors.place2}</div>
+                        </div>
+                        <div>
+                            <FormGroup check>
+                                <Label check>
+                                    <Input
+                                        type="radio"
+                                        name="meters"
+                                        value={values.earthRadius}
+                                        checked={values.earthRadius === 6371000}
+                                        onChange={() => setFieldValue("earthRadius", 6371000)}/>{' '}
+                                    Meters
+                                </Label>
+                            </FormGroup>
+                            <FormGroup check>
+                                <Label check>
+                                    <Input type="radio"
+                                           name="kms"
+                                           value={values.earthRadius}
+                                           checked={values.earthRadius === 6371}
+                                           onChange={() => setFieldValue("earthRadius", 6371)}
+                                    />{' '}
+                                    Kms
+                                </Label>
+                            </FormGroup>
+                            <FormGroup check>
+                                <Label check>
+                                    <Input type="radio"
+                                           name="miles"
+                                           value={values.earthRadius}
+                                           checked={values.earthRadius === 3958.8}
+                                           onChange={() => setFieldValue("earthRadius", 3958.8)}
+                                    />{' '}
+                                    Mi.
+                                </Label>
+                            </FormGroup>
+                        </div>
+                        <Button type="submit" onClick={()=>submitForm()} disabled={isSubmitting }>
+                            Submit
+                        </Button>
+                    </form>
+                )}
+                </Formik>
+            </div>)
     }
 
-    createRequest(){
-        let requestBody = {
-            "requestType" : "distance",
-            "requestVersion" : PROTOCOL_VERSION,
-            "place1" : {
-                "latitude": this.state.place1_lat,
-                "longitude": this.state.place1_lon
-            },
-            "place2" : {
-                "latitude": this.state.place2_lat,
-                "longitude": this.state.place2_lon
-            },
-            "earthRadius" : parseFloat(this.state.earthRadius)
-        }
-        return requestBody
-    }
-
-    submitHandler = (e) =>{
-        e.preventDefault()
-        this.props.setRequest(this.createRequest())
-    }
-
-    changeHandler=(e)=>{
-        this.setState({[e.target.name] : e.target.value})
-    }
-
-    handleClick(unit){
-        if(unit === 0){
-            this.setState({earthRadius : 6371000.0})
-        }else if(unit === 1){
-            this.setState({earthRadius : 6371.0})
-        }else {
-            this.setState({earthRadius: 3958.8})
-        }
-    }
-
-    renderForms(){
-        const toggle = () => {
-            this.setState({dropDownOpen : !this.state.dropDownOpen})
-        }
-        const {place1_lat, place1_lon, place2_lat, place2_lon, earthRadius} = this.state;
-        return(
-            <Form onSubmit={this.submitHandler}>
-                <p>Error Checking not performed to Save time <br/>Make sure Lats are between -90 and 90
-                    <br/>And Lons are between -180 and 180</p>
-                <Container form>
-                    <Row className="centerForm">
-                        <Label for="place1">Place 1</Label>
-                        <FormGroup>
-                            <Col>
-                                <Input type="text"
-                                       name="place1_lat"
-                                       placeholder="Lat"
-                                       value={place1_lat}
-                                       onChange={this.changeHandler}/>
-                            </Col>
-                        </FormGroup>
-                        <FormGroup>
-                            <Col>
-                                <Input type="text"
-                                       name="place1_lon"
-                                       placeholder="Lon"
-                                       value={place1_lon}
-                                       onChange={this.changeHandler}/>
-                            </Col>
-                        </FormGroup>
-                    </Row>
-                    <Row className="centerForm">
-                        <Label for="place2">Place 2</Label>
-                        <FormGroup>
-                            <Col>
-                                <Input type="text"
-                                       name="place2_lat"
-                                       placeholder="Lat"
-                                       value={place2_lat}
-                                       onChange={this.changeHandler}/>
-                            </Col>
-                        </FormGroup>
-                        <FormGroup>
-                            <Col>
-                                <Input type="text"
-                                       name="place2_lon"
-                                       placeholder="Lon"
-                                       value={place2_lon}
-                                       onChange={this.changeHandler}/>
-                            </Col>
-                        </FormGroup>
-                    </Row>
-
-                    <ButtonDropdown isOpen={this.state.dropDownOpen} toggle={toggle}>
-                        <DropdownToggle caret>Distance Units</DropdownToggle>
-                    <DropdownMenu>
-                        <DropdownItem onClick={()=>this.handleClick(0)} toggle={false}>Meters</DropdownItem>
-                        <DropdownItem onClick={()=>this.handleClick(1)} toggle={false}>KM</DropdownItem>
-                        <DropdownItem onClick={()=>this.handleClick(2)} toggle={false}>Miles</DropdownItem>
-                    </DropdownMenu>
-                    </ButtonDropdown>
-                    {this.renderFormButton()}
-                </Container>
-            </Form>
-        )
-    }
-
-    renderFormButton(){
-        if(this.state.place1_lat === "" ||
-            this.state.place1_lon === "" ||
-            this.state.place2_lat === "" ||
-            this.state.place2_lon === "" ||
-            this.state.earthRadius === ""
-        ){
-           return (<Button disabled>Submit Request</Button>)
-        }else{
-            return (<Button type="submit">Submit Request</Button>)
-        }
+    sendDistanceRequest(request){
+        //console.log(request)
+        sendServerPostRequest(SERVER_REQUEST, "distance", request).then((response) => {
+            this.props.processDistanceResponse(response)
+        })
     }
 }

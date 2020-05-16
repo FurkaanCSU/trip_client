@@ -1,24 +1,27 @@
 import React, {Component} from "react";
 import DistanceForms from "./DistanceForms";
-import axios from 'axios';
-import {HTTP_BAD_REQUEST, SERVER_DISTANCE_REQUEST} from "../../Constants";
-import {isJsonResponseValid} from "../../utils/restfulAPI";
-import {checkErrorResponse} from "../../CheckErrorStatus";
+import {isJsonResponseValid, sendServerPostRequest} from "../../utils/restfulAPI";
 import {distanceSchema} from "../../schemas/DistanceResponse";
+import {HTTP_BAD_REQUEST, SERVER_REQUEST} from "../../Constants";
+import {checkErrorResponse, createErrorBanner} from "../../CheckErrorStatus";
 
 export default class Distance extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            request: null,
-            response: null
+        this.state={
+            response: null,
+            errorMessage: null
         }
+        this.processDistanceResponse.bind(this)
     }
 
-    setRequest(obj) {
-        this.setState({request: obj})
+    render() {
+        return (
+            <div>
+                <DistanceForms processDistanceResponse={(resp)=>this.processDistanceResponse(resp)}/>
+                {this.renderResult()}
+            </div>)
     }
-
 
     renderResult() {//uses Response from server
         if (this.state.response === null) {
@@ -26,44 +29,29 @@ export default class Distance extends Component {
         }
         return (
             <div>
-                <p>Distance Calculated: <b>{this.state.response.distance}</b></p>
+                <p>Distance Calculated: <b>{this.state.response.distance}</b>{this.resultUnit()}</p>
             </div>
         );
     }
 
-    render() {
-        if (this.state.request !== null) {
-            this.sendRequest();
-            this.setState({request: null})
-        }
-        return (
-            <div>
-                <DistanceForms
-                    setRequest={(obj) => this.setRequest(obj)}
-                />
-                {this.renderResult()}
-            </div>)
-    }
-
-    sendRequest() {
-        axios.post(SERVER_DISTANCE_REQUEST, this.state.request).then(
-            (response) => {
-                this.processDistanceResponse(response);
-            }
-        ).catch(
-            (error) => {
-                this.processDistanceResponse(error)
-            }
-        )
+    resultUnit(){
+        if(this.state.response.earthRadius < 6371){return<b>miles</b>}
+        else if(this.state.response.earthRadius > 6371){return <b>meters</b>}
+        else {return <b>kms</b>}
     }
 
     processDistanceResponse(response){
-        if(!isJsonResponseValid(response.data, distanceSchema)) {
+        if(!isJsonResponseValid(response.body, distanceSchema)) {
             this.processServerConfigError("INVALID_RESPONSE", HTTP_BAD_REQUEST, `Configuration response not valid`);
-        }else if(!checkErrorResponse(response)){
-            this.setState({response: response.data})
+        }else if(!checkErrorResponse(response.statusCode)){
+            this.setState({response: response.body, errorMessage: null})
         } else{
-            this.processServerConfigError(response.statusText, response.status, "Failed to Fetch from server")
+            this.processServerConfigError(response.statusText, response.statusCode, response.message)
         }
     }
+
+    processServerConfigError(statusText, statusCode, message) {
+        this.setState({response: null, errorMessage: createErrorBanner(statusText, statusCode, message)});
+    }
+
 }

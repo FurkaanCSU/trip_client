@@ -6,7 +6,7 @@ import ErrorBanner from "./ErrorBanner";
 
 export function checkErrorResponse(errorResponse) {
     ///NEED TO FIND OUT HOW TO USE AXIOS RESPONSE VAR TO GET STATUS CODES
-        if (errorResponse.status === HTTP_OK) {
+        if (errorResponse === HTTP_OK) {
             return false;
         }
         return true
